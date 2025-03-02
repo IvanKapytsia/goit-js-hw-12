@@ -1,57 +1,177 @@
-import { currentPage, fetchImages, IMAGES_PER_PAGE } from './js/pickabay-api';
-import {
-  hideButtonLoadMore,
-  hideLoadingView,
-  renderImages,
-  showButtonLoadMore,
-  showLoadingView,
-  showMessageLastPage,
-  showMessageNoResults,
-} from './js/render-functions';
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
 
-const form = document.querySelector('form');
-const input = document.querySelector('#search-text');
-const btnLoadMore = document.getElementById('load-more');
+import { getSearch } from "./js/pixabay-api";
+import { createMarkup } from "./js/render-functions";
 
-form.addEventListener('submit', e => {
-  e.preventDefault();
+const form = document.querySelector('.js-form');
+const gallery = document.querySelector('.js-gallery');
+const loader = document.querySelector('.loader');
+const loadMoreBtn = document.querySelector('.load-more-btn');
+const loadMoreBtnText = document.querySelector('.load-more-btn_text');
+const loadBtnSpinner = document.querySelector('.loader-btn')
 
-  handleSearch();
-});
+let saveQuery = '';
+let refreshPage;
+const perPage = 40;
+let currentPage;
+let totalHits;
 
-btnLoadMore.addEventListener('click', () => handleSearch(true));
+loader.style.display = 'none';
 
-async function handleSearch(isNextPage = false) {
-  hideButtonLoadMore();
-  const searchText = input.value.trim();
+// ==== Listener and function search images form;
 
-  if (!searchText) return;
+form.addEventListener('submit', onSearch);
 
-  showLoadingView(isNextPage);
+async function onSearch(evt) {
+    evt.preventDefault()
+    gallery.innerHTML = '';
 
-  try {
-    const data = await fetchImages(searchText, isNextPage);
+    loader.style.display = 'block';
 
-    handleSearchResults(data.data, isNextPage);
-  } catch (err) {
-    console.log(err);
-  }
+    saveQuery = evt.target.elements.query.value.trim();
+    currentPage = 1;
+
+    if (saveQuery === '') {
+        return iziToast.warning({
+            title: 'Hello',
+            message: 'Please enter search text!',
+        }),
+            loader.style.display = 'none',
+            hideLoadMoreBtn(),
+            form.reset()
+    }
+
+
+    try {
+        const resp = await getSearch(saveQuery, currentPage, perPage)
+
+        gallery.insertAdjacentHTML("beforeend", createMarkup(resp.hits));
+        totalHits = resp.totalHits;
+
+        if (!resp.hits.length) {
+            iziToast.error({
+                title: 'Error',
+                message: 'Sorry, there are no images matching your search query. Please try again!',
+            }),
+                loader.style.display = 'none';
+            hideLoadMoreBtn();
+            form.reset();
+            return;
+        }
+
+        loader.style.display = 'none';
+
+        refreshPage = new SimpleLightbox('.gallery a', {
+            captions: true,
+            captionsData: 'alt',
+            captionDelay: 250,
+        });
+        refreshPage.refresh();
+
+        checkBtnStatus();
+    } catch (err) {
+
+        loader.style.display = 'none';
+
+    };
+    form.reset();
 }
 
-function handleSearchResults(
-  { hits: images, totalHits: imagesCount },
-  isNextPage
-) {
-  const pagesCount = Math.ceil(imagesCount / IMAGES_PER_PAGE);
-  const isLastPage = currentPage === pagesCount;
-  const hasResults = !!images.length;
+// ==== Listener and function Button Load More;
 
-  if (!hasResults) showMessageNoResults();
+loadMoreBtn.addEventListener('click', loadBtnSearch);
 
-  if (isLastPage) showMessageLastPage();
+async function loadBtnSearch() {
+    currentPage += 1;
+    checkBtnStatus();
+    showBtnSpinner();
 
-  if (hasResults && !isLastPage) showButtonLoadMore();
+    const resp = await getSearch(saveQuery, currentPage, perPage)
 
-  hideLoadingView();
-  renderImages(images, isNextPage);
+    gallery.insertAdjacentHTML("beforeend", createMarkup(resp.hits));
+    hideBtnSpinner();
+    scrollNextPage();
+}
+
+// ==== functions show and hide Button Load More;
+
+function showLoadMoreBtn() {
+    loadMoreBtn.classList.remove('hidden');
+}
+
+function hideLoadMoreBtn() {
+    loadMoreBtn.classList.add('hidden');
+}
+
+function checkBtnStatus() {
+    const maxPage = Math.ceil(totalHits / perPage);
+
+    if (currentPage >= maxPage) {
+        hideLoadMoreBtn();
+        iziToast.info({
+            title: 'Hello',
+            message: 'You have viewed all the images.',
+            position: 'topRight',
+        });
+    } else {
+        showLoadMoreBtn();
+    }
+}
+
+// ==== functions show and hide button Load More Spinner;
+
+function showBtnSpinner() {
+    loadBtnSpinner.classList.remove('hidden');
+    loadMoreBtnText.classList.add('hidden');
+}
+
+function hideBtnSpinner() {
+    loadBtnSpinner.classList.add('hidden');
+    loadMoreBtnText.classList.remove('hidden');
+}
+
+// ==== function Button scroll top;
+
+function scrollingTopPage() {
+    document.addEventListener('DOMContentLoaded', function () {
+        const upButton = document.querySelector('.up-btn');
+
+        upButton.addEventListener('click', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            document.body.classList.add('scrolling');
+        });
+
+        window.addEventListener('scroll', function () {
+            if (window.scrollY > 200) {
+                upButton.classList.add('show');
+            } else {
+                upButton.classList.remove('show');
+            }
+
+            if (document.body.classList.contains('scrolling') && window.scrollY === 0) {
+                document.body.classList.remove('scrolling');
+            }
+        });
+    });
+}
+
+scrollingTopPage();
+
+// ==== function smooth scroll next page;
+
+function scrollNextPage() {
+    const infoCard = gallery.firstElementChild.getBoundingClientRect();
+    const heightCard = infoCard.height * 2;
+
+    scrollBy({
+        behavior: 'smooth',
+        top: heightCard,
+    });
 }

@@ -1,38 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="../vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HW js 12</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto&display=swap"
-      rel="stylesheet"
-    />
-    <script type="module" crossorigin src="/goit-js-hw-12/index.js"></script>
-    <link rel="modulepreload" crossorigin href="/goit-js-hw-12/assets/vendor-hwdYKDic.js">
-    <link rel="stylesheet" crossorigin href="/goit-js-hw-12/assets/vendor-CX4EDM7x.css">
-    <link rel="stylesheet" crossorigin href="/goit-js-hw-12/assets/index-BZobXDBm.css">
-  </head>
-  <body>
-    <main>
-      <search>
-        <form>
-          <input
-            type="text"
-            name="search-text"
-            id="search-text"
-            placeholder="Search images..."
-          />
-          <button type="submit">Search</button>
-        </form>
-      </search>
 
-      <ul class="gallery"></ul>
-      <p class="loader-box hidden"><span class="loader"></span></p>
-      <button class="btn hidden" id="load-more" type="button">Load more</button>
-    </main>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/goit-js-hw-12/assets/github-icon-2-7KQ1FwTj.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>goit-js-hw-12</title>
+  <script type="module" crossorigin src="/goit-js-hw-12/index.js"></script>
+  <link rel="modulepreload" crossorigin href="/goit-js-hw-12/assets/vendor-SnYWMg9o.js">
+  <link rel="stylesheet" crossorigin href="/goit-js-hw-12/assets/vendor-CX4EDM7x.css">
+  <link rel="stylesheet" crossorigin href="/goit-js-hw-12/assets/index-CWwjtgF7.css">
+</head>
+
+<body>
+
+  <main>
+    <form action="submit" class="form js-form">
+      <input type="text" name="query" placeholder="Search images..">
+
+      <button>Search</button>
+    </form>
+
+    <span class="loader"></span>
+
+    <div class="container">
+      <ul class="gallery js-gallery"></ul>
+    </div>
+
+    <div class="container">
+      <button class="load-more-btn hidden">
+        <span class="load-more-btn_text">Load More</span>
+        <span class="loader-btn hidden"></span>
+      </button>
+    </div>
+
+    <a class="up-btn" href="#home"> Up </a>
+  </main>
+
+</body>
+
 </html>

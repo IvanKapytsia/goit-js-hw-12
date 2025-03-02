@@ -62,7 +62,8 @@ form input:focus {
   outline: none;
 }
 
-form button {
+form button,
+.btn {
   display: block;
   border-radius: 8px;
   padding: 8px 16px;
@@ -72,7 +73,8 @@ form button {
   cursor: pointer;
 }
 
-form button:hover {
+form button:hover,
+.btn:hover {
   background-color: #6c8cff;
 }
 
@@ -168,6 +170,11 @@ ul {
   width: 48px;
   height: 48px;
   animation: rotation 1s linear infinite;
+}
+
+.btn {
+  margin-top: 32px;
+  margin-inline: auto;
 }
 
 @keyframes rotation {

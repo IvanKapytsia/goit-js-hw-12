@@ -7,9 +7,12 @@ import '../css/custom-easytoast.css';
 import iconNoResults from '../img/icon-no-results.svg';
 
 const gallery = document.querySelector('.gallery');
-const loader = document.querySelector('.loader-box')
+const loader = document.querySelector('.loader-box');
+const btnLoadMore = document.getElementById('load-more');
 
-export function renderImages(images) {
+export function renderImages(images, isNextPage = false) {
+  if (!isNextPage) gallery.innerHTML = '';
+
   const galleryHtml = images
     .map(
       ({
@@ -58,9 +61,20 @@ export function renderImages(images) {
     )
     .join('');
 
-  gallery.innerHTML = galleryHtml;
+  gallery.insertAdjacentHTML('beforeend', galleryHtml);
   lightbox.refresh();
-  hideLoader()
+
+  if (isNextPage && images.length) scrollGallery();
+}
+
+function scrollGallery() {
+  const card = document.querySelector('.gallery-item');
+  const cardHeight = card.getBoundingClientRect().height;
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
 }
 
 const lightbox = new SimpleLightbox('.gallery a', {
@@ -68,17 +82,18 @@ const lightbox = new SimpleLightbox('.gallery a', {
   captionDelay: 250,
 });
 
-export function showLoader(){
-  gallery.classList.add('hidden')
-  loader.classList.remove('hidden')
+export function showLoadingView(isNextPage = false) {
+  if (!isNextPage) gallery.classList.add('hidden');
+
+  loader.classList.remove('hidden');
 }
 
-export function hideLoader(){
-  gallery.classList.remove('hidden')
-  loader.classList.add('hidden')
+export function hideLoadingView() {
+  gallery.classList.remove('hidden');
+  loader.classList.add('hidden');
 }
 
-export function showMessage() {
+export function showMessageNoResults() {
   iziToast.show({
     position: 'topRight',
     message:
@@ -90,4 +105,25 @@ export function showMessage() {
     maxWidth: '432px',
     backgroundColor: '#EF4040',
   });
+}
+
+export function showMessageLastPage() {
+  iziToast.show({
+    position: 'topRight',
+    message: "We're sorry, but you've reached the end of search results.",
+    messageSize: '16px',
+    messageLineHeight: '24px',
+    messageColor: 'white',
+    iconUrl: iconNoResults,
+    maxWidth: '432px',
+    backgroundColor: '#FF6347',
+  });
+}
+
+export function showButtonLoadMore() {
+  btnLoadMore.classList.remove('hidden');
+}
+
+export function hideButtonLoadMore() {
+  btnLoadMore.classList.add('hidden');
 }

@@ -1,34 +1,57 @@
-import fetchImages from './js/pickabay-api';
+import { currentPage, fetchImages, IMAGES_PER_PAGE } from './js/pickabay-api';
 import {
-  hideLoader,
+  hideButtonLoadMore,
+  hideLoadingView,
   renderImages,
-  showLoader,
-  showMessage,
+  showButtonLoadMore,
+  showLoadingView,
+  showMessageLastPage,
+  showMessageNoResults,
 } from './js/render-functions';
 
 const form = document.querySelector('form');
 const input = document.querySelector('#search-text');
+const btnLoadMore = document.getElementById('load-more');
 
-form.addEventListener('submit', handleSubmit);
-
-function handleSubmit(e) {
+form.addEventListener('submit', e => {
   e.preventDefault();
 
+  handleSearch();
+});
+
+btnLoadMore.addEventListener('click', () => handleSearch(true));
+
+async function handleSearch(isNextPage = false) {
+  hideButtonLoadMore();
   const searchText = input.value.trim();
 
   if (!searchText) return;
 
-  input.value = '';
+  showLoadingView(isNextPage);
 
-  showLoader();
+  try {
+    const data = await fetchImages(searchText, isNextPage);
 
-  fetchImages(searchText)
-    .then(data => handleSearchResults(data.data.hits))
-    .catch(err => console.log(err));
+    handleSearchResults(data.data, isNextPage);
+  } catch (err) {
+    console.log(err);
+  }
 }
 
-function handleSearchResults(images) {
-  if (!images.length) showMessage();
+function handleSearchResults(
+  { hits: images, totalHits: imagesCount },
+  isNextPage
+) {
+  const pagesCount = Math.ceil(imagesCount / IMAGES_PER_PAGE);
+  const isLastPage = currentPage === pagesCount;
+  const hasResults = !!images.length;
 
-  renderImages(images);
+  if (!hasResults) showMessageNoResults();
+
+  if (isLastPage) showMessageLastPage();
+
+  if (hasResults && !isLastPage) showButtonLoadMore();
+
+  hideLoadingView();
+  renderImages(images, isNextPage);
 }
